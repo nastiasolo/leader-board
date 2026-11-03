@@ -5,6 +5,7 @@
     "dev:client": "npm --prefix client run dev",
     "dev:server": "npm --prefix server run dev",
     "build": "npm --prefix client run build",
+    "test:client": "npm --prefix client test",
     "test:server": "npm --prefix server test",
     "test:server:db": "npm --prefix server run test:db",
     "test:server:auth": "npm --prefix server run test:auth",
@@ -12,6 +13,7 @@
     "test:server:sales": "npm --prefix server run test:sales",
     "test:sales:db": "npm --prefix server run test:sales:integration",
     "test:leaderboard": "npm --prefix server run test:leaderboard",
+    "test:admin:db": "npm --prefix server run test:admin:integration",
     "db:schema": "node server/scripts/runSchema.js",
     "db:reset-demo": "node server/scripts/seedDemo.js"
   }
