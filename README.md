@@ -55,6 +55,10 @@ The seed script stores password hashes, not plaintext passwords.
 | POST | `/api/auth/login` | Public | Validate credentials and return a JWT |
 | GET | `/api/auth/me` | Bearer token | Return the current employee profile |
 | POST | `/api/auth/register` | Disabled | Return 403; admins create accounts |
+| GET | `/api/sales` | Bearer token | List the current employee's sales |
+| POST | `/api/sales` | Bearer token | Create a sale and commission |
+| PUT | `/api/sales/:id` | Owner or admin | Update a sale |
+| DELETE | `/api/sales/:id` | Owner or admin | Delete a sale |
 
 ## Development
 
@@ -80,6 +84,7 @@ The frontend runs at `http://localhost:3000`; the API runs at
 ```bash
 npm run test:server
 npm run test:server:auth
+npm run test:server:sales
 npm run build
 ```
 
@@ -91,4 +96,6 @@ TEST_DATABASE_URL=postgresql://localhost:5432/sales_leaderboard_test \
   npm run test:server:db
 TEST_DATABASE_URL=postgresql://localhost:5432/sales_leaderboard_test \
   npm run test:auth:db
+TEST_DATABASE_URL=postgresql://localhost:5432/sales_leaderboard_test \
+  npm run test:sales:db
 ```

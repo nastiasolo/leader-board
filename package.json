@@ -9,6 +9,8 @@
     "test:server:db": "npm --prefix server run test:db",
     "test:server:auth": "npm --prefix server run test:auth",
     "test:auth:db": "npm --prefix server run test:auth:integration",
+    "test:server:sales": "npm --prefix server run test:sales",
+    "test:sales:db": "npm --prefix server run test:sales:integration",
     "db:schema": "node server/scripts/runSchema.js",
     "db:reset-demo": "node server/scripts/seedDemo.js"
   }

@@ -9,7 +9,9 @@
     "test": "node --test test/health.test.js",
     "test:db": "node --test test/demoData.test.js",
     "test:auth": "node --test test/auth.test.js test/authMiddleware.test.js",
-    "test:auth:integration": "node --test test/auth.integration.test.js"
+    "test:auth:integration": "node --test test/auth.integration.test.js",
+    "test:sales": "node --test test/saleValidation.test.js",
+    "test:sales:integration": "node --test test/sales.integration.test.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
