@@ -33,3 +33,11 @@ export const leaderboardApi = {
     `/api/leaderboard?period=${encodeURIComponent(period)}`,
   ),
 };
+
+export const salesApi = {
+  list: () => api('/api/sales'),
+  create: (sale) => api('/api/sales', {
+    method: 'POST',
+    body: JSON.stringify(sale),
+  }),
+};

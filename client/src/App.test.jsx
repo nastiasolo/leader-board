@@ -43,7 +43,7 @@ describe('employee sign in', () => {
     await user.click(screen.getByRole('button', { name: 'Log in' }));
 
     // Then the token is stored and the protected dashboard is displayed.
-    expect(await screen.findByRole('heading', { name: 'Dashboard' }))
+    expect(await screen.findByRole('heading', { name: 'My sales' }))
       .toBeTruthy();
     expect(localStorage.getItem('token')).toBe('demo-token');
   });
@@ -200,5 +200,128 @@ describe('sales leaderboard', () => {
     // Then the message from the API is displayed.
     expect(await screen.findByText('Failed to fetch leaderboard'))
       .toBeTruthy();
+  });
+});
+
+describe('personal sales dashboard', () => {
+  beforeEach(() => {
+    localStorage.setItem('token', 'demo-token');
+    window.history.pushState({}, '', '/dashboard');
+  });
+
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it('Given an employee with saved sales, When the dashboard loads, Then sales, commission, and dates are shown', async () => {
+    // Given a profile and a saved sale from the API.
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 2,
+          name: 'Alex Morgan',
+          email: 'alex@example.com',
+          is_admin: false,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ([{
+          id: 45,
+          amount: '1234.00',
+          commission: '123.00',
+          date: '2026-11-03',
+          created_at: '2026-11-03T12:00:00.000Z',
+        }]),
+      }));
+
+    // When the employee opens the dashboard.
+    render(<App />);
+
+    // Then the sale values and date are readable in DKK format.
+    expect(await screen.findByRole('heading', { name: 'My sales' }))
+      .toBeTruthy();
+    expect(screen.getByText('1.234,00 kr.')).toBeTruthy();
+    expect(screen.getByText(/Commission: 123,00 kr\./)).toBeTruthy();
+    expect(screen.getByText('03.11.2026')).toBeTruthy();
+  });
+
+  it('Given an empty sales list, When the employee adds a sale, Then it is saved with commission and displayed', async () => {
+    // Given an empty list and successful create/list responses.
+    const createdSale = {
+      id: 46,
+      amount: '1000.50',
+      commission: '125.25',
+      date: '2026-11-03',
+      created_at: '2026-11-03T12:00:00.000Z',
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 2,
+          name: 'Alex Morgan',
+          email: 'alex@example.com',
+          is_admin: false,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => createdSale })
+      .mockResolvedValueOnce({ ok: true, json: async () => [createdSale] });
+    vi.stubGlobal('fetch', fetchMock);
+    const user = userEvent.setup();
+
+    // When the employee enters a sale and submits the form.
+    render(<App />);
+    await user.type(await screen.findByLabelText('Sale amount (DKK)'), '1000.50');
+    await user.type(screen.getByLabelText('Commission (DKK)'), '125.25');
+    await user.clear(screen.getByLabelText('Date'));
+    await user.type(screen.getByLabelText('Date'), '2026-11-03');
+    await user.click(screen.getByRole('button', { name: 'Add sale' }));
+
+    // Then the API receives the numeric values and refreshed sales appear.
+    expect(await screen.findByText('1.000,50 kr.')).toBeTruthy();
+    expect(screen.getByText(/Commission: 125,25 kr\./)).toBeTruthy();
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({
+      amount: 1000.5,
+      commission: 125.25,
+      date: '2026-11-03',
+    });
+  });
+
+  it('Given the API rejects a sale, When the employee submits it, Then the API error is shown', async () => {
+    // Given a valid profile, empty sales list, and rejected create response.
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 2,
+          name: 'Alex Morgan',
+          email: 'alex@example.com',
+          is_admin: false,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({
+        ok: false,
+        statusText: 'Bad Request',
+        json: async () => ({
+          error: 'At least one of amount or commission must be greater than zero',
+        }),
+      }));
+    const user = userEvent.setup();
+
+    // When the employee tries to save an empty sale.
+    render(<App />);
+    await screen.findByText('No sales yet. Add your first sale above.');
+    await user.click(screen.getByRole('button', { name: 'Add sale' }));
+
+    // Then the message returned by the API is displayed.
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      'At least one of amount or commission must be greater than zero',
+    );
   });
 });
