@@ -48,6 +48,14 @@ Demo logins for the app:
 
 The seed script stores password hashes, not plaintext passwords.
 
+## Authentication API
+
+| Method | Endpoint | Access | Description |
+|--------|----------|--------|-------------|
+| POST | `/api/auth/login` | Public | Validate credentials and return a JWT |
+| GET | `/api/auth/me` | Bearer token | Return the current employee profile |
+| POST | `/api/auth/register` | Disabled | Return 403; admins create accounts |
+
 ## Development
 
 Install dependencies in both applications:
@@ -71,6 +79,7 @@ The frontend runs at `http://localhost:3000`; the API runs at
 
 ```bash
 npm run test:server
+npm run test:server:auth
 npm run build
 ```
 
@@ -80,4 +89,6 @@ Database integration tests use a separate PostgreSQL database:
 createdb sales_leaderboard_test
 TEST_DATABASE_URL=postgresql://localhost:5432/sales_leaderboard_test \
   npm run test:server:db
+TEST_DATABASE_URL=postgresql://localhost:5432/sales_leaderboard_test \
+  npm run test:auth:db
 ```

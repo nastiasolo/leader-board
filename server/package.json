@@ -7,7 +7,9 @@
     "start": "node index.js",
     "dev": "node --watch index.js",
     "test": "node --test test/health.test.js",
-    "test:db": "node --test test/demoData.test.js"
+    "test:db": "node --test test/demoData.test.js",
+    "test:auth": "node --test test/auth.test.js test/authMiddleware.test.js",
+    "test:auth:integration": "node --test test/auth.integration.test.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
