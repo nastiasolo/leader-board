@@ -40,4 +40,9 @@ export const salesApi = {
     method: 'POST',
     body: JSON.stringify(sale),
   }),
+  update: (id, sale) => api(`/api/sales/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(sale),
+  }),
+  remove: (id) => api(`/api/sales/${id}`, { method: 'DELETE' }),
 };

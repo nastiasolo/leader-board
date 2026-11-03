@@ -324,4 +324,142 @@ describe('personal sales dashboard', () => {
       'At least one of amount or commission must be greater than zero',
     );
   });
+
+  it('Given a saved sale, When the employee edits it, Then the updated values are saved and displayed', async () => {
+    // Given one saved sale and successful update/list responses.
+    const originalSale = {
+      id: 45,
+      amount: '1234.00',
+      commission: '123.00',
+      date: '2026-11-03',
+      created_at: '2026-11-03T12:00:00.000Z',
+    };
+    const updatedSale = {
+      ...originalSale,
+      amount: '2500.00',
+      commission: '250.00',
+      date: '2026-11-02',
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 2,
+          name: 'Alex Morgan',
+          email: 'alex@example.com',
+          is_admin: false,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [originalSale] })
+      .mockResolvedValueOnce({ ok: true, json: async () => updatedSale })
+      .mockResolvedValueOnce({ ok: true, json: async () => [updatedSale] });
+    vi.stubGlobal('fetch', fetchMock);
+    const user = userEvent.setup();
+
+    // When the employee changes the saved sale.
+    render(<App />);
+    await screen.findByText('1.234,00 kr.');
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    const amountInputs = screen.getAllByLabelText('Sale amount (DKK)');
+    await user.clear(amountInputs[1]);
+    await user.type(amountInputs[1], '2500');
+    const commissionInputs = screen.getAllByLabelText('Commission (DKK)');
+    await user.clear(commissionInputs[1]);
+    await user.type(commissionInputs[1], '250');
+    await user.clear(screen.getAllByLabelText('Date')[1]);
+    await user.type(screen.getAllByLabelText('Date')[1], '2026-11-02');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    // Then the update contract is sent and the new values appear in the list.
+    expect(await screen.findByText('2.500,00 kr.')).toBeTruthy();
+    expect(screen.getByText(/Commission: 250,00 kr\./)).toBeTruthy();
+    expect(fetchMock.mock.calls[2][0]).toBe('/api/sales/45');
+    expect(fetchMock.mock.calls[2][1].method).toBe('PUT');
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({
+      amount: 2500,
+      commission: 250,
+      date: '2026-11-02',
+    });
+  });
+
+  it('Given a saved sale, When the employee confirms deletion, Then the sale is removed and the list refreshes', async () => {
+    // Given one saved sale, a confirmed delete, and an empty refreshed list.
+    const savedSale = {
+      id: 45,
+      amount: '1234.00',
+      commission: '123.00',
+      date: '2026-11-03',
+      created_at: '2026-11-03T12:00:00.000Z',
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 2,
+          name: 'Alex Morgan',
+          email: 'alex@example.com',
+          is_admin: false,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [savedSale] })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => {
+          throw new Error('No content');
+        },
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] });
+    const confirmMock = vi.fn(() => true);
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('confirm', confirmMock);
+    const user = userEvent.setup();
+
+    // When the employee confirms deleting the sale.
+    render(<App />);
+    await screen.findByText('1.234,00 kr.');
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    // Then the server deletes it and the empty state is shown.
+    expect(await screen.findByText('No sales yet. Add your first sale above.'))
+      .toBeTruthy();
+    expect(confirmMock).toHaveBeenCalledWith('Delete this sale?');
+    expect(fetchMock.mock.calls[2][0]).toBe('/api/sales/45');
+    expect(fetchMock.mock.calls[2][1].method).toBe('DELETE');
+  });
+
+  it('Given a saved sale, When the employee cancels deletion, Then the sale remains unchanged', async () => {
+    // Given one saved sale and a declined confirmation.
+    const savedSale = {
+      id: 45,
+      amount: '1234.00',
+      commission: '123.00',
+      date: '2026-11-03',
+      created_at: '2026-11-03T12:00:00.000Z',
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 2,
+          name: 'Alex Morgan',
+          email: 'alex@example.com',
+          is_admin: false,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [savedSale] });
+    const confirmMock = vi.fn(() => false);
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('confirm', confirmMock);
+    const user = userEvent.setup();
+
+    // When the employee declines the delete prompt.
+    render(<App />);
+    await screen.findByText('1.234,00 kr.');
+    await user.click(screen.getByRole('button', { name: 'Delete' }));
+
+    // Then no DELETE request is sent and the sale stays visible.
+    expect(screen.getByText('1.234,00 kr.')).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(confirmMock).toHaveBeenCalledWith('Delete this sale?');
+  });
 });

@@ -65,6 +65,34 @@
   cursor: wait;
 }
 
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.cancel {
+  min-height: 2.65rem;
+  padding: 0.55rem 1rem;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0.45rem;
+  font: inherit;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.cancel:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--text);
+}
+
+.cancel:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}
+
 .error {
   margin: 1rem 0 0;
   color: var(--danger);

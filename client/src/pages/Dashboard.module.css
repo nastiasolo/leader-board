@@ -78,6 +78,15 @@
   border-radius: 0.65rem;
 }
 
+.saleDetails {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  min-width: 0;
+}
+
 .saleValues {
   display: flex;
   align-items: baseline;
@@ -104,6 +113,34 @@
   font-variant-numeric: tabular-nums;
 }
 
+.saleActions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 0.5rem;
+}
+
+.editButton,
+.deleteButton {
+  padding: 0.45rem 0.65rem;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.editButton:hover {
+  color: var(--text);
+  border-color: var(--accent);
+}
+
+.deleteButton:hover {
+  color: var(--danger);
+  border-color: var(--danger);
+}
+
 @media (max-width: 36rem) {
   .heading {
     align-items: flex-start;
@@ -112,6 +149,11 @@
   }
 
   .sale {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .saleDetails {
     align-items: flex-start;
     flex-direction: column;
   }

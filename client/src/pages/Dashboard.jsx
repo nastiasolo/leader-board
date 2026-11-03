@@ -20,6 +20,7 @@ export default function Dashboard() {
   const [sales, setSales] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
     let isCurrentRequest = true;
@@ -53,6 +54,31 @@ export default function Dashboard() {
     setSales(updatedSales);
   }
 
+  async function handleUpdateSale(id, sale) {
+    setError('');
+    await salesApi.update(id, sale);
+    const updatedSales = await salesApi.list();
+    setSales(updatedSales);
+    setEditingId(null);
+  }
+
+  async function handleDeleteSale(id) {
+    const confirmed = window.confirm('Delete this sale?');
+    if (!confirmed) {
+      return;
+    }
+
+    setError('');
+
+    try {
+      await salesApi.remove(id);
+      const updatedSales = await salesApi.list();
+      setSales(updatedSales);
+    } catch (requestError) {
+      setError(requestError.message);
+    }
+  }
+
   return (
     <section className={styles.dashboard}>
       <div className={styles.heading}>
@@ -81,17 +107,49 @@ export default function Dashboard() {
           <ul className={styles.list}>
             {sales.map((sale) => (
               <li className={styles.sale} key={sale.id}>
-                <div className={styles.saleValues}>
-                  <span className={styles.saleAmount}>
-                    {formatDkk(sale.amount)}
-                  </span>
-                  <span className={styles.commission}>
-                    Commission: {formatDkk(sale.commission)}
-                  </span>
-                </div>
-                <time className={styles.date} dateTime={sale.date}>
-                  {formatDate(sale.date)}
-                </time>
+                {editingId === sale.id ? (
+                  <SalesForm
+                    key={sale.id}
+                    initialSale={sale}
+                    submitLabel="Save changes"
+                    onSave={(updatedSale) => (
+                      handleUpdateSale(sale.id, updatedSale)
+                    )}
+                    onCancel={() => setEditingId(null)}
+                  />
+                ) : (
+                  <>
+                    <div className={styles.saleDetails}>
+                      <div className={styles.saleValues}>
+                        <span className={styles.saleAmount}>
+                          {formatDkk(sale.amount)}
+                        </span>
+                        <span className={styles.commission}>
+                          Commission: {formatDkk(sale.commission)}
+                        </span>
+                      </div>
+                      <time className={styles.date} dateTime={sale.date}>
+                        {formatDate(sale.date)}
+                      </time>
+                    </div>
+                    <div className={styles.saleActions}>
+                      <button
+                        className={styles.editButton}
+                        type="button"
+                        onClick={() => setEditingId(sale.id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className={styles.deleteButton}
+                        type="button"
+                        onClick={() => handleDeleteSale(sale.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
               </li>
             ))}
           </ul>

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import styles from './SalesForm.module.css';
 
 function getTodayDate() {
@@ -10,10 +10,22 @@ function getTodayDate() {
   return localDate.toISOString().slice(0, 10);
 }
 
-export default function SalesForm({ onSave }) {
-  const [amount, setAmount] = useState('');
-  const [commission, setCommission] = useState('');
-  const [date, setDate] = useState(getTodayDate);
+export default function SalesForm({
+  initialSale,
+  onSave,
+  onCancel,
+  submitLabel = 'Add sale',
+}) {
+  const fieldId = useId();
+  const [amount, setAmount] = useState(
+    initialSale ? String(initialSale.amount) : '',
+  );
+  const [commission, setCommission] = useState(
+    initialSale ? String(initialSale.commission) : '',
+  );
+  const [date, setDate] = useState(
+    initialSale?.date || getTodayDate(),
+  );
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -28,8 +40,10 @@ export default function SalesForm({ onSave }) {
         commission: commission === '' ? 0 : Number(commission),
         date,
       });
-      setAmount('');
-      setCommission('');
+      if (!initialSale) {
+        setAmount('');
+        setCommission('');
+      }
     } catch (requestError) {
       setError(requestError.message);
     } finally {
@@ -41,12 +55,12 @@ export default function SalesForm({ onSave }) {
     <form className={styles.form} onSubmit={handleSubmit}>
       <div className={styles.fields}>
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="sale-amount">
+          <label className={styles.label} htmlFor={`${fieldId}-amount`}>
             Sale amount (DKK)
           </label>
           <input
             className={styles.input}
-            id="sale-amount"
+            id={`${fieldId}-amount`}
             type="number"
             min="0"
             step="0.01"
@@ -58,12 +72,12 @@ export default function SalesForm({ onSave }) {
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="sale-commission">
+          <label className={styles.label} htmlFor={`${fieldId}-commission`}>
             Commission (DKK)
           </label>
           <input
             className={styles.input}
-            id="sale-commission"
+            id={`${fieldId}-commission`}
             type="number"
             min="0"
             step="0.01"
@@ -75,10 +89,12 @@ export default function SalesForm({ onSave }) {
         </div>
 
         <div className={styles.field}>
-          <label className={styles.label} htmlFor="sale-date">Date</label>
+          <label className={styles.label} htmlFor={`${fieldId}-date`}>
+            Date
+          </label>
           <input
             className={styles.input}
-            id="sale-date"
+            id={`${fieldId}-date`}
             type="date"
             required
             value={date}
@@ -86,13 +102,25 @@ export default function SalesForm({ onSave }) {
           />
         </div>
 
-        <button
-          className={styles.submit}
-          type="submit"
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Saving…' : 'Add sale'}
-        </button>
+        <div className={styles.actions}>
+          <button
+            className={styles.submit}
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Saving…' : submitLabel}
+          </button>
+          {onCancel && (
+            <button
+              className={styles.cancel}
+              type="button"
+              onClick={onCancel}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </button>
+          )}
+        </div>
       </div>
 
       {error && <p className={styles.error} role="alert">{error}</p>}
