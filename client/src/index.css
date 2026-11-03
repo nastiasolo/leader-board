@@ -1,10 +1,25 @@
+:root {
+  --bg: #0f1419;
+  --surface: #1a2332;
+  --border: #2d3a4d;
+  --text: #e6edf3;
+  --muted: #8b949e;
+  --accent: #58a6ff;
+  --danger: #f85149;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 .page {
-  font-family: Arial, sans-serif;
-  color: #1f2937;
-  background: #f5f6f8;
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  min-height: 100vh;
   margin: 0;
+  color: var(--text);
+  background: var(--bg);
+  font-family: 'Segoe UI', system-ui, sans-serif;
 }
 
 .app {
@@ -18,5 +33,5 @@
 }
 
 .app__message {
-  color: #4b5563;
+  color: var(--muted);
 }
