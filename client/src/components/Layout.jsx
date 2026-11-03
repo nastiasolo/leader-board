@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 import styles from './Layout.module.css';
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
   const navigate = useNavigate();
 
   function handleLogout() {
@@ -35,6 +35,16 @@ export default function Layout() {
           >
             Leaderboard
           </NavLink>
+          {isAdmin && (
+            <NavLink
+              className={({ isActive }) => (
+                isActive ? `${styles.navLink} ${styles.active}` : styles.navLink
+              )}
+              to="/admin"
+            >
+              Admin
+            </NavLink>
+          )}
         </nav>
 
         <div className={styles.account}>

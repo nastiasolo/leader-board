@@ -46,3 +46,12 @@ export const salesApi = {
   }),
   remove: (id) => api(`/api/sales/${id}`, { method: 'DELETE' }),
 };
+
+export const adminApi = {
+  listUsers: () => api('/api/admin/users'),
+  createUser: (user) => api('/api/admin/users', {
+    method: 'POST',
+    body: JSON.stringify(user),
+  }),
+  deleteUser: (id) => api(`/api/admin/users/${id}`, { method: 'DELETE' }),
+};

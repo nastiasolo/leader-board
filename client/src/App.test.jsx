@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App.jsx';
@@ -461,5 +461,174 @@ describe('personal sales dashboard', () => {
     expect(screen.getByText('1.234,00 kr.')).toBeTruthy();
     expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(confirmMock).toHaveBeenCalledWith('Delete this sale?');
+  });
+});
+
+describe('admin employee management', () => {
+  beforeEach(() => {
+    localStorage.setItem('token', 'admin-token');
+    window.history.pushState({}, '', '/admin');
+  });
+
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it('Given an admin, When creating an employee, Then the employee appears in the user list', async () => {
+    // Given an admin profile and the current employee list.
+    const existingUser = {
+      id: 2,
+      name: 'Alex Morgan',
+      email: 'alex@demo.com',
+      photo_url: null,
+      is_admin: false,
+    };
+    const createdUser = {
+      id: 5,
+      name: 'Morgan Chen',
+      email: 'morgan@example.com',
+      photo_url: null,
+      is_admin: false,
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'Avery Johnson',
+          email: 'admin@demo.com',
+          is_admin: true,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [existingUser] })
+      .mockResolvedValueOnce({ ok: true, json: async () => createdUser })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [createdUser, existingUser],
+      });
+    vi.stubGlobal('fetch', fetchMock);
+    const user = userEvent.setup();
+
+    // When the admin submits a new employee profile.
+    render(<App />);
+    await user.type(await screen.findByLabelText('Name'), 'Morgan Chen');
+    await user.type(screen.getByLabelText('Email'), 'morgan@example.com');
+    await user.type(screen.getByLabelText('Password'), 'DemoPass456!');
+    await user.click(screen.getByRole('button', { name: 'Create user' }));
+
+    // Then the employee is created and the current users are reloaded.
+    expect(await screen.findByText('morgan@example.com')).toBeTruthy();
+    expect(fetchMock.mock.calls[2][0]).toBe('/api/admin/users');
+    expect(fetchMock.mock.calls[2][1].method).toBe('POST');
+    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({
+      name: 'Morgan Chen',
+      email: 'morgan@example.com',
+      password: 'DemoPass456!',
+      photo_url: null,
+      is_admin: false,
+    });
+  });
+
+  it('Given an admin and an employee, When the admin confirms deletion, Then that employee is removed', async () => {
+    // Given an admin, an employee list, and a successful delete response.
+    const adminProfile = {
+      id: 1,
+      name: 'Avery Johnson',
+      email: 'admin@demo.com',
+      is_admin: true,
+    };
+    const employee = {
+      id: 2,
+      name: 'Alex Morgan',
+      email: 'alex@demo.com',
+      photo_url: null,
+      is_admin: false,
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => adminProfile })
+      .mockResolvedValueOnce({ ok: true, json: async () => [adminProfile, employee] })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => {
+          throw new Error('No content');
+        },
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [adminProfile] });
+    const confirmMock = vi.fn(() => true);
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('confirm', confirmMock);
+    const user = userEvent.setup();
+
+    // When the admin confirms deleting the employee.
+    render(<App />);
+    await screen.findByText('alex@demo.com');
+    await user.click(screen.getByRole('button', { name: 'Delete Alex Morgan' }));
+
+    // Then the API deletes that account and the refreshed list omits it.
+    await waitFor(() => {
+      expect(screen.queryByText('alex@demo.com')).toBeNull();
+    });
+    expect(confirmMock).toHaveBeenCalledWith('Delete Alex Morgan?');
+    expect(fetchMock.mock.calls[2][0]).toBe('/api/admin/users/2');
+    expect(fetchMock.mock.calls[2][1].method).toBe('DELETE');
+  });
+
+  it('Given an admin and an employee, When the admin cancels deletion, Then no delete request is sent', async () => {
+    // Given an admin, an employee list, and a declined confirmation.
+    const adminProfile = {
+      id: 1,
+      name: 'Avery Johnson',
+      email: 'admin@demo.com',
+      is_admin: true,
+    };
+    const employee = {
+      id: 2,
+      name: 'Alex Morgan',
+      email: 'alex@demo.com',
+      photo_url: null,
+      is_admin: false,
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: true, json: async () => adminProfile })
+      .mockResolvedValueOnce({ ok: true, json: async () => [adminProfile, employee] });
+    const confirmMock = vi.fn(() => false);
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('confirm', confirmMock);
+    const user = userEvent.setup();
+
+    // When the admin declines the confirmation.
+    render(<App />);
+    await screen.findByText('alex@demo.com');
+    await user.click(screen.getByRole('button', { name: 'Delete Alex Morgan' }));
+
+    // Then the employee remains visible and the request list is unchanged.
+    expect(screen.getByText('alex@demo.com')).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(confirmMock).toHaveBeenCalledWith('Delete Alex Morgan?');
+  });
+
+  it('Given a regular employee, When opening the admin route, Then access is denied', async () => {
+    // Given a regular employee profile at the admin URL.
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 2,
+          name: 'Alex Morgan',
+          email: 'alex@demo.com',
+          is_admin: false,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }));
+
+    // When the employee opens the admin route.
+    render(<App />);
+
+    // Then the app redirects to Dashboard and hides admin navigation.
+    expect(await screen.findByRole('heading', { name: 'My sales' }))
+      .toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
   });
 });

@@ -2,6 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import Layout from './components/Layout.jsx';
 import Dashboard from './pages/Dashboard.jsx';
+import AdminPanel from './pages/AdminPanel.jsx';
 import Leaderboard from './pages/Leaderboard.jsx';
 import Login from './pages/Login.jsx';
 
@@ -19,6 +20,12 @@ function ProtectedLayout() {
   return <Layout />;
 }
 
+function AdminRoute() {
+  const { isAdmin } = useAuth();
+
+  return isAdmin ? <AdminPanel /> : <Navigate to="/dashboard" replace />;
+}
+
 function AppRoutes() {
   const { loading, user } = useAuth();
 
@@ -31,6 +38,7 @@ function AppRoutes() {
       <Route element={<ProtectedLayout />}>
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/leaderboard" element={<Leaderboard />} />
+        <Route path="/admin" element={<AdminRoute />} />
       </Route>
       <Route path="/" element={<Navigate to="/dashboard" replace />} />
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
