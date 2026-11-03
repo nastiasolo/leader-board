@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import SalesForm from '../components/SalesForm.jsx';
+import Avatar from '../components/Avatar.jsx';
 import { adminApi, salesApi } from '../api/client.js';
 import styles from './AdminPanel.module.css';
 
@@ -278,7 +279,15 @@ export default function AdminPanel() {
               <tbody>
                 {users.map((employee) => (
                   <tr key={employee.id}>
-                    <td>{employee.name}</td>
+                    <td>
+                      <div className={styles.employeeIdentity}>
+                        <Avatar
+                          name={employee.name}
+                          photoUrl={employee.photo_url}
+                        />
+                        <span>{employee.name}</span>
+                      </div>
+                    </td>
                     <td>{employee.email}</td>
                     <td>{employee.is_admin ? 'Admin' : 'Employee'}</td>
                     <td>
@@ -342,12 +351,20 @@ export default function AdminPanel() {
                       <>
                         <td>{sale.id}</td>
                         <td>
-                          <span className={styles.employeeName}>
-                            {sale.name}
-                          </span>
-                          <span className={styles.employeeEmail}>
-                            {sale.email}
-                          </span>
+                          <div className={styles.employeeIdentity}>
+                            <Avatar
+                              name={sale.name}
+                              photoUrl={sale.photo_url}
+                            />
+                            <div>
+                              <span className={styles.employeeName}>
+                                {sale.name}
+                              </span>
+                              <span className={styles.employeeEmail}>
+                                {sale.email}
+                              </span>
+                            </div>
+                          </div>
                         </td>
                         <td>
                           <time dateTime={sale.date}>

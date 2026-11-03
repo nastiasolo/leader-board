@@ -34,7 +34,9 @@ test(
 
     // When: demo account and sales records are queried
     const users = await pool.query(
-      'SELECT email, password_hash, is_admin FROM employees ORDER BY email',
+      `SELECT email, password_hash, is_admin, photo_url
+       FROM employees
+       ORDER BY email`,
     );
     const sales = await pool.query(
       'SELECT COUNT(*)::int AS count FROM sales',
@@ -44,6 +46,16 @@ test(
     assert.equal(users.rowCount, demoAccounts.length);
     assert.equal(users.rows.filter((user) => user.is_admin).length, 1);
     assert.equal(sales.rows[0].count >= 8, true);
+
+    const photosByEmail = Object.fromEntries(
+      users.rows.map((user) => [user.email, user.photo_url]),
+    );
+    assert.deepEqual(photosByEmail, {
+      'admin@demo.com': '/avatars/avery.png',
+      'alex@demo.com': '/avatars/alex.png',
+      'jordan@demo.com': '/avatars/jordan.png',
+      'taylor@demo.com': '/avatars/taylor.png',
+    });
 
     const admin = users.rows.find((user) => user.is_admin);
     assert.equal(

@@ -148,6 +148,12 @@
   display: block;
 }
 
+.employeeIdentity {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
 .employeeEmail {
   margin-top: 0.2rem;
   color: var(--muted);

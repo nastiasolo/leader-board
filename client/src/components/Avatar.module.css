@@ -1,0 +1,20 @@
+.avatar,
+.fallback {
+  width: 2.5rem;
+  height: 2.5rem;
+  flex: 0 0 2.5rem;
+  border-radius: 50%;
+}
+
+.avatar {
+  object-fit: cover;
+}
+
+.fallback {
+  display: grid;
+  place-items: center;
+  color: var(--text);
+  background: #2d3a4d;
+  font-size: 0.9rem;
+  font-weight: 700;
+}

@@ -4,24 +4,28 @@ const demoAccounts = [
   {
     email: 'admin@demo.com',
     name: 'Avery Johnson',
+    photoUrl: '/avatars/avery.png',
     isAdmin: true,
     password: 'DemoPass123!',
   },
   {
     email: 'alex@demo.com',
     name: 'Alex Morgan',
+    photoUrl: '/avatars/alex.png',
     isAdmin: false,
     password: 'DemoPass123!',
   },
   {
     email: 'jordan@demo.com',
     name: 'Jordan Lee',
+    photoUrl: '/avatars/jordan.png',
     isAdmin: false,
     password: 'DemoPass123!',
   },
   {
     email: 'taylor@demo.com',
     name: 'Taylor Kim',
+    photoUrl: '/avatars/taylor.png',
     isAdmin: false,
     password: 'DemoPass123!',
   },
@@ -61,10 +65,17 @@ async function resetDemoData(pool) {
     for (const account of demoAccounts) {
       const passwordHash = await bcrypt.hash(account.password, 10);
       const result = await client.query(
-        `INSERT INTO employees (email, password_hash, name, is_admin)
-         VALUES ($1, $2, $3, $4)
+        `INSERT INTO employees
+           (email, password_hash, name, photo_url, is_admin)
+         VALUES ($1, $2, $3, $4, $5)
          RETURNING id`,
-        [account.email, passwordHash, account.name, account.isAdmin],
+        [
+          account.email,
+          passwordHash,
+          account.name,
+          account.photoUrl,
+          account.isAdmin,
+        ],
       );
 
       employeeIds.set(account.email, result.rows[0].id);

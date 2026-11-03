@@ -1,5 +1,6 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
+import Avatar from './Avatar.jsx';
 import styles from './Layout.module.css';
 
 export default function Layout() {
@@ -48,6 +49,7 @@ export default function Layout() {
         </nav>
 
         <div className={styles.account}>
+          <Avatar name={user.name} photoUrl={user.photo_url} />
           <span className={styles.userName}>{user.name}</span>
           <button
             className={styles.logout}

@@ -4,6 +4,7 @@
 
 ```text
 client/
+  public/avatars/ Fictional employee profile images
   src/
     api/          Fetch helpers for the Express API
     components/   Shared layout and sale form

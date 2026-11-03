@@ -30,6 +30,7 @@ describe('employee sign in', () => {
           id: 2,
           name: 'Alex Morgan',
           email: 'alex@example.com',
+          photo_url: '/avatars/avery.png',
           is_admin: false,
         }),
       });
@@ -37,13 +38,15 @@ describe('employee sign in', () => {
     const user = userEvent.setup();
 
     // When the employee submits the login form.
-    render(<App />);
+    const { container } = render(<App />);
     await user.type(screen.getByLabelText('Email'), 'alex@example.com');
     await user.type(screen.getByLabelText('Password'), 'DemoPass123!');
     await user.click(screen.getByRole('button', { name: 'Log in' }));
 
     // Then the token is stored and the protected dashboard is displayed.
     expect(await screen.findByRole('heading', { name: 'My sales' }))
+      .toBeTruthy();
+    expect(container.querySelector('img[src="/avatars/avery.png"]'))
       .toBeTruthy();
     expect(localStorage.getItem('token')).toBe('demo-token');
   });
@@ -105,14 +108,14 @@ describe('sales leaderboard', () => {
               rank: 1,
               employee_id: 1,
               name: 'Jordan Lee',
-              photo_url: null,
+              photo_url: '/avatars/jordan.png',
               total_sales: 25000,
             },
             {
               rank: 2,
               employee_id: 2,
               name: 'Alex Morgan',
-              photo_url: null,
+              photo_url: '/avatars/alex.png',
               total_sales: 12345.5,
             },
           ],
@@ -120,12 +123,14 @@ describe('sales leaderboard', () => {
       }));
 
     // When the employee opens the leaderboard page.
-    render(<App />);
+    const { container } = render(<App />);
 
     // Then the page shows the rankings, DKK totals, and own row highlight.
     expect(await screen.findByRole('heading', { name: 'Leaderboard' }))
       .toBeTruthy();
     expect(screen.getByText('Jordan Lee')).toBeTruthy();
+    expect(container.querySelector('img[src="/avatars/jordan.png"]'))
+      .toBeTruthy();
     expect(screen.getByText('12.345,50 kr.')).toBeTruthy();
     expect(screen.getByText('You').closest('li')
       .getAttribute('aria-current')).toBe('true');
@@ -482,7 +487,7 @@ describe('admin employee management', () => {
       id: 2,
       name: 'Alex Morgan',
       email: 'alex@demo.com',
-      photo_url: null,
+      photo_url: '/avatars/alex.png',
       is_admin: false,
     };
     const createdUser = {
@@ -513,7 +518,7 @@ describe('admin employee management', () => {
     const user = userEvent.setup();
 
     // When the admin submits a new employee profile.
-    render(<App />);
+    const { container } = render(<App />);
     await user.type(await screen.findByLabelText('Name'), 'Morgan Chen');
     await user.type(screen.getByLabelText('Email'), 'morgan@example.com');
     await user.type(screen.getByLabelText('Password'), 'DemoPass456!');
@@ -521,6 +526,8 @@ describe('admin employee management', () => {
 
     // Then the employee is created and the current users are reloaded.
     expect(await screen.findByText('morgan@example.com')).toBeTruthy();
+    expect(container.querySelector('img[src="/avatars/alex.png"]'))
+      .toBeTruthy();
     expect(fetchMock.mock.calls[3][0]).toBe('/api/admin/users');
     expect(fetchMock.mock.calls[3][1].method).toBe('POST');
     expect(JSON.parse(fetchMock.mock.calls[3][1].body)).toEqual({
@@ -656,6 +663,7 @@ describe('admin sales management', () => {
       employee_id: 2,
       name: 'Alex Morgan',
       email: 'alex@demo.com',
+      photo_url: '/avatars/alex.png',
       amount: '1234.00',
       commission: '123.00',
       date: '2026-11-03',
@@ -674,10 +682,12 @@ describe('admin sales management', () => {
       .mockResolvedValueOnce({ ok: true, json: async () => [sale] }));
 
     // When the admin opens the management page.
-    render(<App />);
+    const { container } = render(<App />);
 
     // Then the all-sales table shows employee details and amounts.
     expect(await screen.findByText('alex@demo.com')).toBeTruthy();
+    expect(container.querySelector('img[src="/avatars/alex.png"]'))
+      .toBeTruthy();
     expect(screen.getByText('1.234,00 kr.')).toBeTruthy();
     expect(screen.getByText('123,00 kr.')).toBeTruthy();
     expect(screen.getByText('03.11.2026')).toBeTruthy();

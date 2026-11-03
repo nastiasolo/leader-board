@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
 import { leaderboardApi } from '../api/client.js';
+import Avatar from '../components/Avatar.jsx';
 import styles from './Leaderboard.module.css';
 
 const PERIODS = [
@@ -44,18 +45,6 @@ function formatDkk(amount) {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   })} kr.`;
-}
-
-function Avatar({ name, photoUrl }) {
-  if (photoUrl) {
-    return <img className={styles.avatar} src={photoUrl} alt="" />;
-  }
-
-  return (
-    <span className={styles.avatarFallback} aria-hidden="true">
-      {name?.[0]?.toUpperCase() || '?'}
-    </span>
-  );
 }
 
 export default function Leaderboard() {
