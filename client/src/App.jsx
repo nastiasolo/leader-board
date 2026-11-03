@@ -1,8 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import Layout from './components/Layout.jsx';
+import Dashboard from './pages/Dashboard.jsx';
+import Leaderboard from './pages/Leaderboard.jsx';
 import Login from './pages/Login.jsx';
 
-function ProtectedDashboard() {
+function ProtectedLayout() {
   const { loading, user } = useAuth();
 
   if (loading) {
@@ -13,12 +16,7 @@ function ProtectedDashboard() {
     return <Navigate to="/login" replace />;
   }
 
-  return (
-    <main className="app">
-      <h1 className="app__title">Dashboard</h1>
-      <p className="app__message">Welcome, {user.name}.</p>
-    </main>
-  );
+  return <Layout />;
 }
 
 function AppRoutes() {
@@ -28,10 +26,14 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/login"
-        element={loading ? null : user ? <Navigate to="/" replace /> : <Login />}
+        element={loading ? null : user ? <Navigate to="/dashboard" replace /> : <Login />}
       />
-      <Route path="/" element={<ProtectedDashboard />} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route element={<ProtectedLayout />}>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/leaderboard" element={<Leaderboard />} />
+      </Route>
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
 }

@@ -27,3 +27,9 @@ export const authApi = {
   }),
   me: () => api('/api/auth/me'),
 };
+
+export const leaderboardApi = {
+  get: (period = 'month') => api(
+    `/api/leaderboard?period=${encodeURIComponent(period)}`,
+  ),
+};

@@ -1,0 +1,106 @@
+.layout {
+  min-height: 100vh;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  min-height: 4.5rem;
+  padding: 0 2rem;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.navigation {
+  display: flex;
+  align-self: stretch;
+  gap: 0.5rem;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  padding: 0 0.85rem;
+  color: var(--muted);
+  border-bottom: 2px solid transparent;
+  font-size: 0.9rem;
+  text-decoration: none;
+}
+
+.navLink:hover,
+.active {
+  color: var(--text);
+}
+
+.active {
+  border-bottom-color: var(--accent);
+}
+
+.account {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-left: auto;
+}
+
+.userName {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.logout {
+  padding: 0.5rem 0.75rem;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  font: inherit;
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.logout:hover {
+  border-color: var(--accent);
+}
+
+.main {
+  width: min(100% - 3rem, 72rem);
+  margin: 0 auto;
+  padding: 2.5rem 0 4rem;
+}
+
+@media (max-width: 48rem) {
+  .header {
+    flex-wrap: wrap;
+    gap: 0 1rem;
+    padding: 0.75rem 1rem 0;
+  }
+
+  .brand {
+    margin-right: auto;
+  }
+
+  .account {
+    margin-left: 0;
+  }
+
+  .navigation {
+    order: 1;
+    width: 100%;
+    min-height: 3rem;
+  }
+
+  .main {
+    width: min(100% - 2rem, 72rem);
+    padding-top: 1.75rem;
+  }
+}
