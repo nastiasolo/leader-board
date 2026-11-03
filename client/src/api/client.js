@@ -49,6 +49,7 @@ export const salesApi = {
 
 export const adminApi = {
   listUsers: () => api('/api/admin/users'),
+  listSales: () => api('/api/admin/sales'),
   createUser: (user) => api('/api/admin/users', {
     method: 'POST',
     body: JSON.stringify(user),

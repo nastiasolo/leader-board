@@ -143,6 +143,17 @@
   color: var(--text);
 }
 
+.employeeName,
+.employeeEmail {
+  display: block;
+}
+
+.employeeEmail {
+  margin-top: 0.2rem;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
 .table tbody tr:last-child td {
   border-bottom: 0;
 }
@@ -156,6 +167,27 @@
   font: inherit;
   font-size: 0.75rem;
   cursor: pointer;
+}
+
+.saleActions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.actionButton {
+  padding: 0.4rem 0.65rem;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  font: inherit;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.actionButton:hover {
+  color: var(--text);
+  border-color: var(--accent);
 }
 
 .deleteButton:hover {

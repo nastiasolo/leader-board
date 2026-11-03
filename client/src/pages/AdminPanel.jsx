@@ -1,6 +1,7 @@
 import { useEffect, useId, useState } from 'react';
 import { useAuth } from '../context/AuthContext.jsx';
-import { adminApi } from '../api/client.js';
+import SalesForm from '../components/SalesForm.jsx';
+import { adminApi, salesApi } from '../api/client.js';
 import styles from './AdminPanel.module.css';
 
 const emptyUser = {
@@ -15,11 +16,15 @@ export default function AdminPanel() {
   const { user: currentUser } = useAuth();
   const formId = useId();
   const [users, setUsers] = useState([]);
+  const [sales, setSales] = useState([]);
   const [newUser, setNewUser] = useState(emptyUser);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingSales, setIsLoadingSales] = useState(true);
+  const [editingSaleId, setEditingSaleId] = useState(null);
   const [isCreating, setIsCreating] = useState(false);
   const [formError, setFormError] = useState('');
   const [listError, setListError] = useState('');
+  const [salesError, setSalesError] = useState('');
 
   useEffect(() => {
     let isCurrentRequest = true;
@@ -46,6 +51,31 @@ export default function AdminPanel() {
     };
   }, []);
 
+  useEffect(() => {
+    let isCurrentRequest = true;
+
+    adminApi.listSales()
+      .then((result) => {
+        if (isCurrentRequest) {
+          setSales(result);
+        }
+      })
+      .catch((requestError) => {
+        if (isCurrentRequest) {
+          setSalesError(requestError.message);
+        }
+      })
+      .finally(() => {
+        if (isCurrentRequest) {
+          setIsLoadingSales(false);
+        }
+      });
+
+    return () => {
+      isCurrentRequest = false;
+    };
+  }, []);
+
   function handleChange(field, value) {
     setNewUser((previousUser) => ({ ...previousUser, [field]: value }));
   }
@@ -53,6 +83,11 @@ export default function AdminPanel() {
   async function refreshUsers() {
     const updatedUsers = await adminApi.listUsers();
     setUsers(updatedUsers);
+  }
+
+  async function refreshSales() {
+    const updatedSales = await adminApi.listSales();
+    setSales(updatedSales);
   }
 
   async function handleCreateUser(event) {
@@ -84,10 +119,46 @@ export default function AdminPanel() {
 
     try {
       await adminApi.deleteUser(employee.id);
-      await refreshUsers();
+      await Promise.all([refreshUsers(), refreshSales()]);
     } catch (requestError) {
       setListError(requestError.message);
     }
+  }
+
+  async function handleUpdateSale(id, sale) {
+    setSalesError('');
+    await salesApi.update(id, sale);
+    await refreshSales();
+    setEditingSaleId(null);
+  }
+
+  async function handleDeleteSale(sale) {
+    const confirmed = window.confirm('Delete this sale?');
+    if (!confirmed) {
+      return;
+    }
+
+    setSalesError('');
+
+    try {
+      await salesApi.remove(sale.id);
+      await refreshSales();
+    } catch (requestError) {
+      setSalesError(requestError.message);
+    }
+  }
+
+  function formatDkk(amount) {
+    return `${Number(amount).toLocaleString('da-DK', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })} kr.`;
+  }
+
+  function formatDate(value) {
+    const [year, month, day] = String(value).split('T')[0].split('-');
+
+    return year && month && day ? `${day}.${month}.${year}` : value;
   }
 
   return (
@@ -222,6 +293,91 @@ export default function AdminPanel() {
                         </button>
                       )}
                     </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className={styles.section} aria-labelledby="sales-title">
+        <h2 className={styles.sectionTitle} id="sales-title">All sales</h2>
+        {salesError && (
+          <p className={styles.error} role="alert">{salesError}</p>
+        )}
+        {isLoadingSales ? (
+          <p className={styles.status} aria-live="polite">Loading sales…</p>
+        ) : salesError ? null : sales.length === 0 ? (
+          <p className={styles.status}>No sales found.</p>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th scope="col">ID</th>
+                  <th scope="col">Employee</th>
+                  <th scope="col">Date</th>
+                  <th scope="col">Sale amount</th>
+                  <th scope="col">Commission</th>
+                  <th scope="col">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {sales.map((sale) => (
+                  <tr key={sale.id}>
+                    {editingSaleId === sale.id ? (
+                      <td colSpan="6">
+                        <SalesForm
+                          key={sale.id}
+                          initialSale={sale}
+                          submitLabel="Save changes"
+                          onSave={(updatedSale) => (
+                            handleUpdateSale(sale.id, updatedSale)
+                          )}
+                          onCancel={() => setEditingSaleId(null)}
+                        />
+                      </td>
+                    ) : (
+                      <>
+                        <td>{sale.id}</td>
+                        <td>
+                          <span className={styles.employeeName}>
+                            {sale.name}
+                          </span>
+                          <span className={styles.employeeEmail}>
+                            {sale.email}
+                          </span>
+                        </td>
+                        <td>
+                          <time dateTime={sale.date}>
+                            {formatDate(sale.date)}
+                          </time>
+                        </td>
+                        <td>{formatDkk(sale.amount)}</td>
+                        <td>{formatDkk(sale.commission)}</td>
+                        <td>
+                          <div className={styles.saleActions}>
+                            <button
+                              className={styles.actionButton}
+                              type="button"
+                              aria-label={`Edit sale #${sale.id}`}
+                              onClick={() => setEditingSaleId(sale.id)}
+                            >
+                              Edit
+                            </button>
+                            <button
+                              className={styles.deleteButton}
+                              type="button"
+                              aria-label={`Delete sale #${sale.id}`}
+                              onClick={() => handleDeleteSale(sale)}
+                            >
+                              Delete
+                            </button>
+                          </div>
+                        </td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>

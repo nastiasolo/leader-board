@@ -503,6 +503,7 @@ describe('admin employee management', () => {
         }),
       })
       .mockResolvedValueOnce({ ok: true, json: async () => [existingUser] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
       .mockResolvedValueOnce({ ok: true, json: async () => createdUser })
       .mockResolvedValueOnce({
         ok: true,
@@ -520,9 +521,9 @@ describe('admin employee management', () => {
 
     // Then the employee is created and the current users are reloaded.
     expect(await screen.findByText('morgan@example.com')).toBeTruthy();
-    expect(fetchMock.mock.calls[2][0]).toBe('/api/admin/users');
-    expect(fetchMock.mock.calls[2][1].method).toBe('POST');
-    expect(JSON.parse(fetchMock.mock.calls[2][1].body)).toEqual({
+    expect(fetchMock.mock.calls[3][0]).toBe('/api/admin/users');
+    expect(fetchMock.mock.calls[3][1].method).toBe('POST');
+    expect(JSON.parse(fetchMock.mock.calls[3][1].body)).toEqual({
       name: 'Morgan Chen',
       email: 'morgan@example.com',
       password: 'DemoPass456!',
@@ -549,13 +550,15 @@ describe('admin employee management', () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => adminProfile })
       .mockResolvedValueOnce({ ok: true, json: async () => [adminProfile, employee] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
       .mockResolvedValueOnce({
         ok: true,
         json: async () => {
           throw new Error('No content');
         },
       })
-      .mockResolvedValueOnce({ ok: true, json: async () => [adminProfile] });
+      .mockResolvedValueOnce({ ok: true, json: async () => [adminProfile] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] });
     const confirmMock = vi.fn(() => true);
     vi.stubGlobal('fetch', fetchMock);
     vi.stubGlobal('confirm', confirmMock);
@@ -571,8 +574,8 @@ describe('admin employee management', () => {
       expect(screen.queryByText('alex@demo.com')).toBeNull();
     });
     expect(confirmMock).toHaveBeenCalledWith('Delete Alex Morgan?');
-    expect(fetchMock.mock.calls[2][0]).toBe('/api/admin/users/2');
-    expect(fetchMock.mock.calls[2][1].method).toBe('DELETE');
+    expect(fetchMock.mock.calls[3][0]).toBe('/api/admin/users/2');
+    expect(fetchMock.mock.calls[3][1].method).toBe('DELETE');
   });
 
   it('Given an admin and an employee, When the admin cancels deletion, Then no delete request is sent', async () => {
@@ -592,7 +595,8 @@ describe('admin employee management', () => {
     };
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({ ok: true, json: async () => adminProfile })
-      .mockResolvedValueOnce({ ok: true, json: async () => [adminProfile, employee] });
+      .mockResolvedValueOnce({ ok: true, json: async () => [adminProfile, employee] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] });
     const confirmMock = vi.fn(() => false);
     vi.stubGlobal('fetch', fetchMock);
     vi.stubGlobal('confirm', confirmMock);
@@ -605,7 +609,7 @@ describe('admin employee management', () => {
 
     // Then the employee remains visible and the request list is unchanged.
     expect(screen.getByText('alex@demo.com')).toBeTruthy();
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(confirmMock).toHaveBeenCalledWith('Delete Alex Morgan?');
   });
 
@@ -630,5 +634,156 @@ describe('admin employee management', () => {
     expect(await screen.findByRole('heading', { name: 'My sales' }))
       .toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
+  });
+});
+
+describe('admin sales management', () => {
+  beforeEach(() => {
+    localStorage.setItem('token', 'admin-token');
+    window.history.pushState({}, '', '/admin');
+  });
+
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it('Given an admin, When all sales load, Then employee and DKK details are shown', async () => {
+    // Given an admin profile, employees, and an all-sales response.
+    const sale = {
+      id: 45,
+      employee_id: 2,
+      name: 'Alex Morgan',
+      email: 'alex@demo.com',
+      amount: '1234.00',
+      commission: '123.00',
+      date: '2026-11-03',
+    };
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'Avery Johnson',
+          email: 'admin@demo.com',
+          is_admin: true,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [sale] }));
+
+    // When the admin opens the management page.
+    render(<App />);
+
+    // Then the all-sales table shows employee details and amounts.
+    expect(await screen.findByText('alex@demo.com')).toBeTruthy();
+    expect(screen.getByText('1.234,00 kr.')).toBeTruthy();
+    expect(screen.getByText('123,00 kr.')).toBeTruthy();
+    expect(screen.getByText('03.11.2026')).toBeTruthy();
+  });
+
+  it('Given an admin and a saved sale, When the admin edits it, Then the API and table show updated values', async () => {
+    // Given an admin profile, an employee list, and one saved sale.
+    const originalSale = {
+      id: 45,
+      employee_id: 2,
+      name: 'Alex Morgan',
+      email: 'alex@demo.com',
+      amount: '1234.00',
+      commission: '123.00',
+      date: '2026-11-03',
+    };
+    const updatedSale = {
+      ...originalSale,
+      amount: '2500.00',
+      commission: '250.00',
+      date: '2026-11-02',
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'Avery Johnson',
+          email: 'admin@demo.com',
+          is_admin: true,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [originalSale] })
+      .mockResolvedValueOnce({ ok: true, json: async () => updatedSale })
+      .mockResolvedValueOnce({ ok: true, json: async () => [updatedSale] });
+    vi.stubGlobal('fetch', fetchMock);
+    const user = userEvent.setup();
+
+    // When the admin updates the sale details.
+    render(<App />);
+    await screen.findByText('alex@demo.com');
+    await user.click(screen.getByRole('button', { name: 'Edit sale #45' }));
+    await user.clear(screen.getByLabelText('Sale amount (DKK)'));
+    await user.type(screen.getByLabelText('Sale amount (DKK)'), '2500');
+    await user.clear(screen.getByLabelText('Commission (DKK)'));
+    await user.type(screen.getByLabelText('Commission (DKK)'), '250');
+    await user.clear(screen.getByLabelText('Date'));
+    await user.type(screen.getByLabelText('Date'), '2026-11-02');
+    await user.click(screen.getByRole('button', { name: 'Save changes' }));
+
+    // Then the update request has the contract fields and new values display.
+    expect(await screen.findByText('2.500,00 kr.')).toBeTruthy();
+    expect(fetchMock.mock.calls[3][0]).toBe('/api/sales/45');
+    expect(fetchMock.mock.calls[3][1].method).toBe('PUT');
+    expect(JSON.parse(fetchMock.mock.calls[3][1].body)).toEqual({
+      amount: 2500,
+      commission: 250,
+      date: '2026-11-02',
+    });
+  });
+
+  it('Given an admin and a saved sale, When the admin confirms deletion, Then the sale is removed', async () => {
+    // Given an admin profile, an employee list, and one saved sale.
+    const sale = {
+      id: 45,
+      employee_id: 2,
+      name: 'Alex Morgan',
+      email: 'alex@demo.com',
+      amount: '1234.00',
+      commission: '123.00',
+      date: '2026-11-03',
+    };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'Avery Johnson',
+          email: 'admin@demo.com',
+          is_admin: true,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] })
+      .mockResolvedValueOnce({ ok: true, json: async () => [sale] })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => {
+          throw new Error('No content');
+        },
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] });
+    const confirmMock = vi.fn(() => true);
+    vi.stubGlobal('fetch', fetchMock);
+    vi.stubGlobal('confirm', confirmMock);
+    const user = userEvent.setup();
+
+    // When the admin confirms deleting the sale.
+    render(<App />);
+    await screen.findByText('alex@demo.com');
+    await user.click(screen.getByRole('button', { name: 'Delete sale #45' }));
+
+    // Then the API deletes the sale and the empty state appears.
+    expect(await screen.findByText('No sales found.')).toBeTruthy();
+    expect(confirmMock).toHaveBeenCalledWith('Delete this sale?');
+    expect(fetchMock.mock.calls[3][0]).toBe('/api/sales/45');
+    expect(fetchMock.mock.calls[3][1].method).toBe('DELETE');
   });
 });
