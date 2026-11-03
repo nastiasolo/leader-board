@@ -1,0 +1,22 @@
+.page {
+  font-family: Arial, sans-serif;
+  color: #1f2937;
+  background: #f5f6f8;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  margin: 0;
+}
+
+.app {
+  max-width: 72rem;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.app__title {
+  margin: 0 0 1rem;
+}
+
+.app__message {
+  color: #4b5563;
+}
