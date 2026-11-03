@@ -5,6 +5,9 @@
     "dev:client": "npm --prefix client run dev",
     "dev:server": "npm --prefix server run dev",
     "build": "npm --prefix client run build",
-    "test:server": "npm --prefix server test"
+    "test:server": "npm --prefix server test",
+    "test:server:db": "npm --prefix server run test:db",
+    "db:schema": "node server/scripts/runSchema.js",
+    "db:reset-demo": "node server/scripts/seedDemo.js"
   }
 }

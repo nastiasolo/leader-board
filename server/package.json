@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node index.js",
     "dev": "node --watch index.js",
-    "test": "node --test"
+    "test": "node --test test/health.test.js",
+    "test:db": "node --test test/demoData.test.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",
