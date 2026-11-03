@@ -65,6 +65,30 @@ router.get('/users', async (request, response) => {
   }
 });
 
+router.get('/sales', async (request, response) => {
+  try {
+    const result = await pool.query(
+      `SELECT sales.id,
+              sales.employee_id,
+              sales.amount,
+              sales.commission,
+              sales.date::text AS date,
+              sales.created_at,
+              employees.name,
+              employees.email,
+              employees.photo_url
+       FROM sales
+       JOIN employees ON employees.id = sales.employee_id
+       ORDER BY sales.date DESC, sales.created_at DESC, sales.id DESC`,
+    );
+
+    return response.json(result.rows);
+  } catch (error) {
+    console.error(error);
+    return response.status(500).json({ error: 'Failed to fetch sales' });
+  }
+});
+
 router.post('/users', async (request, response) => {
   const user = getUserInput(request.body);
   if (user.error) {

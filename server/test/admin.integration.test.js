@@ -129,6 +129,25 @@ test(
 );
 
 test(
+  'Given the admin, When listing all sales, Then sale values include employee details',
+  async () => {
+    // Given: the seeded admin token and fake sales records.
+    const token = await login(demoAccounts[0]);
+
+    // When: the admin requests all sales.
+    const { response, body } = await requestAdmin('/sales', { token });
+
+    // Then: sales include commission and their employee identity.
+    assert.equal(response.status, 200);
+    assert.equal(body.length, 16);
+    assert.equal(body.every((sale) => 'employee_id' in sale), true);
+    assert.equal(body.every((sale) => 'commission' in sale), true);
+    assert.equal(body.every((sale) => 'name' in sale && 'email' in sale), true);
+    assert.equal(body.every((sale) => /^\d{4}-\d{2}-\d{2}$/.test(sale.date)), true);
+  },
+);
+
+test(
   'Given valid employee details, When the admin creates a user, Then the account can log in',
   async () => {
     // Given: valid details for a new non-admin employee.
