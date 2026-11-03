@@ -82,6 +82,24 @@ test(
 );
 
 test(
+  'Given demo data, When checking today, Then every employee has a sale',
+  async () => {
+    // Given: a freshly seeded demo database
+    await resetDemoData(pool);
+
+    // When: sales recorded today are counted
+    const result = await pool.query(
+      `SELECT COUNT(DISTINCT employee_id)::int AS count
+       FROM sales
+       WHERE date = CURRENT_DATE`,
+    );
+
+    // Then: every demo employee has a current-period sale
+    assert.equal(result.rows[0].count, demoAccounts.length);
+  },
+);
+
+test(
   'Given a sale, When commission is set, Then DKK values are stored',
   async () => {
     // Given: the demo employee exists

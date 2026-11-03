@@ -59,6 +59,7 @@ The seed script stores password hashes, not plaintext passwords.
 | POST | `/api/sales` | Bearer token | Create a sale and commission |
 | PUT | `/api/sales/:id` | Owner or admin | Update a sale |
 | DELETE | `/api/sales/:id` | Owner or admin | Delete a sale |
+| GET | `/api/leaderboard` | Bearer token | Rank sales by week, month, or year |
 
 ## Development
 
@@ -98,4 +99,6 @@ TEST_DATABASE_URL=postgresql://localhost:5432/sales_leaderboard_test \
   npm run test:auth:db
 TEST_DATABASE_URL=postgresql://localhost:5432/sales_leaderboard_test \
   npm run test:sales:db
+TEST_DATABASE_URL=postgresql://localhost:5432/sales_leaderboard_test \
+  npm run test:leaderboard
 ```

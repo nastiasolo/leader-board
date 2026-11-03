@@ -11,6 +11,7 @@
     "test:auth:db": "npm --prefix server run test:auth:integration",
     "test:server:sales": "npm --prefix server run test:sales",
     "test:sales:db": "npm --prefix server run test:sales:integration",
+    "test:leaderboard": "npm --prefix server run test:leaderboard",
     "db:schema": "node server/scripts/runSchema.js",
     "db:reset-demo": "node server/scripts/seedDemo.js"
   }

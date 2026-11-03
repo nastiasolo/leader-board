@@ -28,15 +28,19 @@ const demoAccounts = [
 ];
 
 const demoSales = [
+  { email: 'admin@demo.com', amount: 6000, commission: 600, daysAgo: 0 },
   { email: 'admin@demo.com', amount: 8200, commission: 820, daysAgo: 2 },
   { email: 'admin@demo.com', amount: 6300, commission: 630, daysAgo: 16 },
   { email: 'admin@demo.com', amount: 5400, commission: 540, daysAgo: 72 },
+  { email: 'alex@demo.com', amount: 7000, commission: 700, daysAgo: 0 },
   { email: 'alex@demo.com', amount: 9100, commission: 910, daysAgo: 1 },
   { email: 'alex@demo.com', amount: 4700, commission: 470, daysAgo: 12 },
   { email: 'alex@demo.com', amount: 3600, commission: 360, daysAgo: 58 },
+  { email: 'jordan@demo.com', amount: 5800, commission: 580, daysAgo: 0 },
   { email: 'jordan@demo.com', amount: 7600, commission: 760, daysAgo: 3 },
   { email: 'jordan@demo.com', amount: 6800, commission: 680, daysAgo: 20 },
   { email: 'jordan@demo.com', amount: 5900, commission: 590, daysAgo: 86 },
+  { email: 'taylor@demo.com', amount: 5100, commission: 510, daysAgo: 0 },
   { email: 'taylor@demo.com', amount: 6900, commission: 690, daysAgo: 5 },
   { email: 'taylor@demo.com', amount: 5200, commission: 520, daysAgo: 25 },
   { email: 'taylor@demo.com', amount: 4100, commission: 410, daysAgo: 104 },
