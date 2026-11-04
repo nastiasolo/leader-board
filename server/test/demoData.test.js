@@ -34,7 +34,7 @@ test(
 
     // When: demo account and sales records are queried
     const users = await pool.query(
-      `SELECT email, password_hash, is_admin, photo_url
+      `SELECT email, password_hash, is_admin, is_display, photo_url
        FROM employees
        ORDER BY email`,
     );
@@ -45,6 +45,7 @@ test(
     // Then: demo logins exist and their passwords are hashed
     assert.equal(users.rowCount, demoAccounts.length);
     assert.equal(users.rows.filter((user) => user.is_admin).length, 1);
+    assert.equal(users.rows.filter((user) => user.is_display).length, 1);
     assert.equal(sales.rows[0].count >= 8, true);
 
     const photosByEmail = Object.fromEntries(
@@ -54,6 +55,7 @@ test(
       'admin@demo.com': '/avatars/avery.png',
       'alex@demo.com': '/avatars/alex.png',
       'jordan@demo.com': '/avatars/jordan.png',
+      'screen@demo.com': null,
       'taylor@demo.com': '/avatars/taylor.png',
     });
 
@@ -107,7 +109,10 @@ test(
     );
 
     // Then: every demo employee has a current-period sale
-    assert.equal(result.rows[0].count, demoAccounts.length);
+    assert.equal(
+      result.rows[0].count,
+      demoAccounts.filter((account) => !account.isDisplay).length,
+    );
   },
 );
 

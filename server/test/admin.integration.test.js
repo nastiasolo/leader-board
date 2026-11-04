@@ -121,6 +121,10 @@ test(
     assert.equal(response.status, 200);
     assert.equal(body.length, demoAccounts.length);
     assert.equal(body.some((user) => 'password_hash' in user), false);
+    assert.equal(
+      body.find((user) => user.email === 'screen@demo.com')?.is_display,
+      true,
+    );
     assert.deepEqual(
       body.map((user) => user.email).sort(),
       demoAccounts.map((user) => user.email).sort(),

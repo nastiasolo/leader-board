@@ -136,6 +136,36 @@ test(
 );
 
 test(
+  'Given a display account, When logging in, Then its read-only role is returned',
+  async () => {
+    // Given: the dedicated display account's demo credentials
+    const displayAccount = {
+      email: 'screen@demo.com',
+      password: 'DemoPass123!',
+    };
+
+    // When: the display account signs in and requests its profile
+    const loginResponse = await fetch(`${baseUrl}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(displayAccount),
+    });
+    const login = await loginResponse.json();
+    const profileResponse = await fetch(`${baseUrl}/api/auth/me`, {
+      headers: { Authorization: `Bearer ${login.token}` },
+    });
+    const profile = await profileResponse.json();
+
+    // Then: both the login response and verified token identify a display account
+    assert.equal(loginResponse.status, 200);
+    assert.equal(login.user.is_display, true);
+    assert.equal(jwt.verify(login.token, process.env.JWT_SECRET).is_display, true);
+    assert.equal(profileResponse.status, 200);
+    assert.equal(profile.is_display, true);
+  },
+);
+
+test(
   'Given a bad token, When requesting a profile, Then access is denied',
   async () => {
     // Given: an invalid bearer token

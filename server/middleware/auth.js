@@ -16,6 +16,7 @@ function authMiddleware(request, response, next) {
       id: decoded.id,
       email: decoded.email,
       is_admin: Boolean(decoded.is_admin),
+      is_display: Boolean(decoded.is_display),
     };
 
     return next();

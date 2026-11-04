@@ -118,6 +118,44 @@ test('Given no token, When listing sales, Then access is denied', async () => {
   assert.deepEqual(body, { error: 'Authentication required' });
 });
 
+test(
+  'Given a display account, When accessing data, Then only the leaderboard is readable',
+  async () => {
+    // Given: a token for the dedicated display account
+    const token = await login({
+      email: 'screen@demo.com',
+      password: 'DemoPass123!',
+    });
+
+    // When: the display account reads the leaderboard and accesses sales
+    const leaderboardResult = await requestSales(
+      '/api/leaderboard?period=month',
+      { token },
+    );
+    const listResult = await requestSales('/api/sales', { token });
+    const createResult = await requestSales('/api/sales', {
+      method: 'POST',
+      token,
+      body: {
+        amount: 100,
+        commission: 10,
+        date: await today(),
+      },
+    });
+
+    // Then: leaderboard access works while sales access is denied
+    assert.equal(leaderboardResult.response.status, 200);
+    assert.equal(listResult.response.status, 403);
+    assert.equal(createResult.response.status, 403);
+    assert.deepEqual(listResult.body, {
+      error: 'Display accounts are read-only',
+    });
+    assert.deepEqual(createResult.body, {
+      error: 'Display accounts are read-only',
+    });
+  },
+);
+
 test('Given employee, When listing, Then only own sales return', async () => {
   // Given: a seeded employee with demo sales
   const token = await login(demoAccounts[1]);

@@ -29,6 +29,14 @@ const demoAccounts = [
     isAdmin: false,
     password: 'DemoPass123!',
   },
+  {
+    email: 'screen@demo.com',
+    name: 'Sales Display',
+    photoUrl: null,
+    isAdmin: false,
+    isDisplay: true,
+    password: 'DemoPass123!',
+  },
 ];
 
 const demoSales = [
@@ -66,8 +74,8 @@ async function resetDemoData(pool) {
       const passwordHash = await bcrypt.hash(account.password, 10);
       const result = await client.query(
         `INSERT INTO employees
-           (email, password_hash, name, photo_url, is_admin)
-         VALUES ($1, $2, $3, $4, $5)
+           (email, password_hash, name, photo_url, is_admin, is_display)
+         VALUES ($1, $2, $3, $4, $5, $6)
          RETURNING id`,
         [
           account.email,
@@ -75,6 +83,7 @@ async function resetDemoData(pool) {
           account.name,
           account.photoUrl,
           account.isAdmin,
+          account.isDisplay ?? false,
         ],
       );
 

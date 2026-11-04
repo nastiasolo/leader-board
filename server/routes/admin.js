@@ -53,7 +53,7 @@ function getUserInput(body) {
 router.get('/users', async (request, response) => {
   try {
     const result = await pool.query(
-      `SELECT id, email, name, photo_url, is_admin, created_at
+      `SELECT id, email, name, photo_url, is_admin, is_display, created_at
        FROM employees
        ORDER BY created_at DESC, id DESC`,
     );
@@ -100,7 +100,7 @@ router.post('/users', async (request, response) => {
     const result = await pool.query(
       `INSERT INTO employees (email, password_hash, name, photo_url, is_admin)
        VALUES ($1, $2, $3, $4, $5)
-       RETURNING id, email, name, photo_url, is_admin, created_at`,
+       RETURNING id, email, name, photo_url, is_admin, is_display, created_at`,
       [user.email, passwordHash, user.name, user.photoUrl, user.isAdmin],
     );
 

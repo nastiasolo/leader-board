@@ -289,7 +289,11 @@ export default function AdminPanel() {
                       </div>
                     </td>
                     <td>{employee.email}</td>
-                    <td>{employee.is_admin ? 'Admin' : 'Employee'}</td>
+                    <td>
+                      {employee.is_admin
+                        ? 'Admin'
+                        : employee.is_display ? 'Display' : 'Employee'}
+                    </td>
                     <td>
                       {employee.id !== currentUser.id && (
                         <button

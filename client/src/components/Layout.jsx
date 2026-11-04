@@ -46,6 +46,16 @@ export default function Layout() {
               Admin
             </NavLink>
           )}
+          {isAdmin && (
+            <NavLink
+              className={styles.navLink}
+              to="/display"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Show on screen
+            </NavLink>
+          )}
         </nav>
 
         <div className={styles.account}>

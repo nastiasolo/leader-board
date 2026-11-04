@@ -8,7 +8,18 @@ const {
 } = require('../lib/saleValidation');
 
 const router = express.Router();
-router.use(authMiddleware);
+
+function denyDisplayAccount(request, response, next) {
+  if (request.user.is_display) {
+    return response.status(403).json({
+      error: 'Display accounts are read-only',
+    });
+  }
+
+  return next();
+}
+
+router.use(authMiddleware, denyDisplayAccount);
 
 function parseSaleId(value) {
   const saleId = Number(value);

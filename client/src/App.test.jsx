@@ -797,3 +797,157 @@ describe('admin sales management', () => {
     expect(fetchMock.mock.calls[3][1].method).toBe('DELETE');
   });
 });
+
+describe('leaderboard display access', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    window.history.pushState({}, '', '/login');
+  });
+
+  afterEach(() => {
+    cleanup();
+    localStorage.clear();
+    vi.unstubAllGlobals();
+  });
+
+  it('Given display credentials, When signing in, Then the read-only display opens', async () => {
+    // Given: display credentials, profile, and an empty current leaderboard.
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ token: 'screen-token' }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 5,
+          name: 'Sales Display',
+          email: 'screen@demo.com',
+          is_admin: false,
+          is_display: true,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          period: 'month',
+          start: '2026-11-01',
+          end: '2026-11-04',
+          leaderboard: [],
+        }),
+      }));
+    const user = userEvent.setup();
+
+    // When: the display account signs in.
+    render(<App />);
+    await user.type(screen.getByLabelText('Email'), 'screen@demo.com');
+    await user.type(screen.getByLabelText('Password'), 'DemoPass123!');
+    await user.click(screen.getByRole('button', { name: 'Log in' }));
+
+    // Then: the display route opens without standard app navigation.
+    expect(await screen.findByRole('button', { name: 'Exit display' }))
+      .toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Dashboard' })).toBeNull();
+    expect(screen.getByText('No sales in this period.')).toBeTruthy();
+  });
+
+  it('Given a regular employee, When opening the display route, Then access is denied', async () => {
+    // Given: a regular employee profile and the display route.
+    localStorage.setItem('token', 'employee-token');
+    window.history.pushState({}, '', '/display');
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 2,
+          name: 'Alex Morgan',
+          email: 'alex@demo.com',
+          is_admin: false,
+          is_display: false,
+        }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }));
+
+    // When: the employee requests the display page.
+    render(<App />);
+
+    // Then: they return to their dashboard and do not see display controls.
+    expect(await screen.findByRole('heading', { name: 'My sales' }))
+      .toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Exit display' })).toBeNull();
+  });
+
+  it('Given an admin, When opening the display route, Then the display screen is available', async () => {
+    // Given: an admin profile and a current leaderboard response.
+    localStorage.setItem('token', 'admin-token');
+    window.history.pushState({}, '', '/display');
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'Avery Johnson',
+          email: 'admin@demo.com',
+          is_admin: true,
+          is_display: false,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          period: 'month',
+          start: '2026-11-01',
+          end: '2026-11-04',
+          leaderboard: [],
+        }),
+      }));
+
+    // When: the admin opens the display route.
+    render(<App />);
+
+    // Then: the screen renders outside the standard navigation layout.
+    expect(await screen.findByRole('button', { name: 'Exit display' }))
+      .toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
+  });
+
+  it('Given an admin, When opening the admin page, Then Show on screen opens a new tab', async () => {
+    // Given: an admin profile, a display account, and an empty sales list.
+    localStorage.setItem('token', 'admin-token');
+    window.history.pushState({}, '', '/admin');
+    vi.stubGlobal('fetch', vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'Avery Johnson',
+          email: 'admin@demo.com',
+          is_admin: true,
+          is_display: false,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [{
+          id: 5,
+          name: 'Sales Display',
+          email: 'screen@demo.com',
+          photo_url: null,
+          is_admin: false,
+          is_display: true,
+        }],
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => [] }));
+
+    // When: the admin opens the management page.
+    render(<App />);
+
+    // Then: the navigation offers a new-tab link to the display route.
+    const displayLink = await screen.findByRole('link', {
+      name: 'Show on screen',
+    });
+    expect(displayLink.getAttribute('href')).toBe('/display');
+    expect(displayLink.getAttribute('target')).toBe('_blank');
+    expect(screen.getByText('Display')).toBeTruthy();
+  });
+});
