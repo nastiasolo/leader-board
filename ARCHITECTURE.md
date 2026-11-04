@@ -35,6 +35,7 @@ the `pg` PostgreSQL client. Authentication uses JWT and bcrypt.
 | `/login` | Login | Signed out |
 | `/dashboard` | Personal sales and sale form | Signed in |
 | `/leaderboard` | Period rankings | Signed in |
+| `/display` | Large-screen leaderboard | Display account or admin |
 | `/admin` | Employee and all-sales management | Admin |
 
 The shared layout provides navigation and the signed-in employee controls.
@@ -53,6 +54,7 @@ loads and exposes login state to protected routes.
 | `name` | varchar | Display name |
 | `photo_url` | text, nullable | Optional profile image |
 | `is_admin` | boolean | Grants access to admin routes and page |
+| `is_display` | boolean | Grants read-only access to the large-screen display |
 | `created_at` | timestamptz | Account creation time |
 
 ### `sales`
@@ -75,12 +77,20 @@ commission does not affect the ranking.
 `POST /api/auth/login` checks the email and password hash, then returns a
 seven-day JWT and the employee profile. The client stores the token in
 `localStorage` and sends it as `Authorization: Bearer <token>`. The API
-middleware verifies the token and makes the employee ID and admin role
-available to route handlers. Admin routes also require `is_admin`.
+middleware verifies the token and makes the employee ID, admin role, and
+display role available to route handlers. Admin routes also require `is_admin`.
 
 Self-registration is disabled. Admins create employee accounts through the
 admin API. Employees can access their own sales; admins can manage any sale.
-An admin cannot delete their own account.
+An admin cannot delete their own account. Display accounts can read the
+leaderboard but cannot access sales or admin APIs. Admins can open `/display`
+from **Show on screen** in the navigation; the link opens a new tab. The
+display account is seeded as `screen@demo.com` with the shared demo password.
+
+The display route has no regular application navigation. It requests the
+leaderboard immediately, then refreshes every 30 minutes. It shows the time of
+the last successful update and keeps the previous results visible if a refresh
+fails. The client disables browser caching for these requests.
 
 ## API
 
@@ -93,11 +103,11 @@ and the health check. Endpoints under `/api/admin` require an admin account.
 | POST | `/api/auth/register` | Public, disabled | Returns 403; accounts are admin-created |
 | GET | `/api/auth/me` | Signed in | Return the current employee profile |
 | GET | `/health` | Public | Confirm that the API is responding |
-| GET | `/api/sales` | Signed in | List the current employee's sales |
-| POST | `/api/sales` | Signed in | Create a sale with `amount`, `commission`, and `date` |
+| GET | `/api/sales` | Signed-in employee or admin | List the current employee's sales; display accounts are denied |
+| POST | `/api/sales` | Signed-in employee or admin | Create a sale with `amount`, `commission`, and `date`; display accounts are denied |
 | PUT | `/api/sales/:id` | Owner or admin | Update a sale |
 | DELETE | `/api/sales/:id` | Owner or admin | Delete a sale |
-| GET | `/api/leaderboard?period=week\|month\|year` | Signed in | Rank employees by sales amount in the period |
+| GET | `/api/leaderboard?period=week\|month\|year` | Signed in, including display accounts | Rank employees by sales amount in the period |
 | GET | `/api/admin/users` | Admin | List employee profiles |
 | POST | `/api/admin/users` | Admin | Create an employee with name, email, password, and optional photo/admin role |
 | DELETE | `/api/admin/users/:id` | Admin | Delete an employee and their sales; self-deletion is rejected |

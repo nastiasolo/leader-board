@@ -63,6 +63,7 @@ All accounts use the password `DemoPass123!`.
 | Employee | `alex@demo.com` |
 | Employee | `jordan@demo.com` |
 | Employee | `taylor@demo.com` |
+| Display | `screen@demo.com` |
 
 The seed script stores password hashes, not plaintext passwords.
 
@@ -71,6 +72,10 @@ The seed script stores password hashes, not plaintext passwords.
 - Employees can sign in, record sales and commissions, and edit or delete
   their own entries.
 - The leaderboard ranks sales for the current week, month, or year.
+- The read-only display account can open `/display` for a large shared screen.
+  Admins can open the same view from **Show on screen** in the navigation.
+  The display refreshes every 30 minutes and keeps the last successful results
+  visible if a refresh fails.
 - Admins can create and remove employee accounts and manage all sales.
 - Sales and commissions are displayed in DKK.
 
@@ -88,11 +93,22 @@ listed as admin.
 | POST | `/api/sales` | Signed in | Create a sale and commission |
 | PUT | `/api/sales/:id` | Owner or admin | Update a sale |
 | DELETE | `/api/sales/:id` | Owner or admin | Delete a sale |
-| GET | `/api/leaderboard` | Signed in | Rank sales by week, month, or year |
+| GET | `/api/leaderboard` | Signed in | Rank sales by week, month, or year; display accounts are read-only |
 | GET | `/api/admin/users` | Admin | List employees |
 | POST | `/api/admin/users` | Admin | Create an employee account |
 | DELETE | `/api/admin/users/:id` | Admin | Delete an employee account |
 | GET | `/api/admin/sales` | Admin | List all sales |
+
+If you already have a local database from an earlier version, apply the
+updated schema and reload the demo data to create the display account:
+
+```bash
+npm run db:schema
+npm run db:reset-demo
+```
+
+The reset replaces all employees and sales in the database configured by
+`DATABASE_URL`.
 
 ## Verification
 
