@@ -79,6 +79,36 @@ The seed script stores password hashes, not plaintext passwords.
 - Admins can create and remove employee accounts and manage all sales.
 - Sales and commissions are displayed in DKK.
 
+## Application screens
+
+### Dashboard
+
+Employees can record a sale with its commission and date, then review, edit, or
+delete their own sales.
+
+![Dashboard with the sale form and sales history](docs/screenshots/dashboard.png)
+
+### Leaderboard
+
+Ranks employees by sales for the current week, month, or year and highlights
+the signed-in employee's position.
+
+![Leaderboard with period filters and employee rankings](docs/screenshots/leaderboard.png)
+
+### Admin
+
+Admins can create and remove employee accounts and manage sales across the
+team.
+
+![Admin screen for managing employees and sales](docs/screenshots/admin.png)
+
+### Sales display
+
+Shows a read-only leaderboard without app navigation, sized for a shared
+screen. It refreshes every 30 minutes and displays the last successful update.
+
+![Read-only leaderboard for a shared screen](docs/screenshots/display.png)
+
 ## API
 
 All endpoints except login require a bearer token, except where access is
