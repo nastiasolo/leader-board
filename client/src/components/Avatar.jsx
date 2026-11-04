@@ -1,10 +1,14 @@
 import styles from './Avatar.module.css';
 
-export default function Avatar({ name, photoUrl }) {
+export default function Avatar({ name, photoUrl, size = 'medium' }) {
+  const isLarge = size === 'large';
+
   if (photoUrl) {
     return (
       <img
-        className={styles.avatar}
+        className={isLarge
+          ? `${styles.avatar} ${styles.avatarLarge}`
+          : styles.avatar}
         src={photoUrl}
         alt=""
       />
@@ -12,7 +16,12 @@ export default function Avatar({ name, photoUrl }) {
   }
 
   return (
-    <span className={styles.fallback} aria-hidden="true">
+    <span
+      className={isLarge
+        ? `${styles.fallback} ${styles.fallbackLarge}`
+        : styles.fallback}
+      aria-hidden="true"
+    >
       {name?.[0]?.toUpperCase() || '?'}
     </span>
   );

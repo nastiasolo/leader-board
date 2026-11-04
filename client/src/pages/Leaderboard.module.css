@@ -2,6 +2,55 @@
   max-width: 56rem;
 }
 
+.displayMode {
+  width: 100%;
+  max-width: 96rem;
+  margin: 0 auto;
+}
+
+.displayMode .title {
+  font-size: clamp(2.5rem, 4vw, 4rem);
+}
+
+.displayMode .periodLabel,
+.displayMode .filter {
+  font-size: clamp(1rem, 1.4vw, 1.35rem);
+}
+
+.displayMode .row {
+  min-height: 6.5rem;
+  padding: 1rem 1.5rem;
+  font-size: 1.25rem;
+}
+
+.displayMode .person {
+  gap: 1rem;
+}
+
+.displayMode .name,
+.displayMode .total {
+  font-size: clamp(1.25rem, 1.8vw, 1.75rem);
+}
+
+.displayMode .rank {
+  font-size: 1.2rem;
+}
+
+.displayMode .youLabel {
+  font-size: 0.9rem;
+}
+
+.updatedAt {
+  margin: 0 0 1rem;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: right;
+}
+
+.displayMode .updatedAt {
+  font-size: 1rem;
+}
+
 .heading {
   display: flex;
   align-items: flex-end;
@@ -144,5 +193,14 @@
   .total {
     grid-column: 2;
     padding-left: 3.25rem;
+  }
+
+  .displayMode .row {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    gap: 0.65rem;
+  }
+
+  .displayMode .total {
+    padding-left: 4.5rem;
   }
 }

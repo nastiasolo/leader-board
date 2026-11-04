@@ -18,3 +18,10 @@
   font-size: 0.9rem;
   font-weight: 700;
 }
+
+.avatarLarge,
+.fallbackLarge {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex-basis: 3.5rem;
+}

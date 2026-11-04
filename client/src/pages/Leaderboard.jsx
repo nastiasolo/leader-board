@@ -4,6 +4,8 @@ import { leaderboardApi } from '../api/client.js';
 import Avatar from '../components/Avatar.jsx';
 import styles from './Leaderboard.module.css';
 
+const DISPLAY_REFRESH_INTERVAL = 30 * 60 * 1000;
+
 const PERIODS = [
   { value: 'week', label: 'This week' },
   { value: 'month', label: 'This month' },
@@ -47,11 +49,19 @@ function formatDkk(amount) {
   })} kr.`;
 }
 
-export default function Leaderboard() {
+function formatUpdateTime(date) {
+  return date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
+
+export default function Leaderboard({ displayMode = false }) {
   const [period, setPeriod] = useState('month');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -59,30 +69,50 @@ export default function Leaderboard() {
 
     setLoading(true);
     setError('');
-    leaderboardApi.get(period)
-      .then((result) => {
+    setLastUpdatedAt(null);
+
+    async function loadLatestLeaderboard() {
+      try {
+        const result = await leaderboardApi.get(period);
+
         if (isCurrentRequest) {
           setData(result);
+          setLastUpdatedAt(new Date());
+          setError('');
         }
-      })
-      .catch((requestError) => {
+      } catch (requestError) {
         if (isCurrentRequest) {
           setError(requestError.message);
         }
-      })
-      .finally(() => {
+      } finally {
         if (isCurrentRequest) {
           setLoading(false);
         }
-      });
+      }
+    }
+
+    void loadLatestLeaderboard();
+    const refreshInterval = displayMode
+      ? window.setInterval(() => {
+        void loadLatestLeaderboard();
+      }, DISPLAY_REFRESH_INTERVAL)
+      : null;
 
     return () => {
       isCurrentRequest = false;
+      if (refreshInterval !== null) {
+        window.clearInterval(refreshInterval);
+      }
     };
-  }, [period]);
+  }, [displayMode, period]);
+
+  const hasCurrentPeriodData = data?.period === period;
 
   return (
-    <section className={styles.leaderboard}>
+    <section className={displayMode
+      ? `${styles.leaderboard} ${styles.displayMode}`
+      : styles.leaderboard}
+    >
       <div className={styles.heading}>
         <div>
           <p className={styles.eyebrow}>Team performance</p>
@@ -107,12 +137,18 @@ export default function Leaderboard() {
         ))}
       </div>
 
+      {displayMode && lastUpdatedAt && (
+        <p className={styles.updatedAt}>
+          Last updated at {formatUpdateTime(lastUpdatedAt)}
+        </p>
+      )}
+
       {error && <p className={styles.error} role="alert">{error}</p>}
-      {loading ? (
+      {loading && !hasCurrentPeriodData ? (
         <p className={styles.status} aria-live="polite">Loading rankings…</p>
-      ) : error ? null : data?.leaderboard?.length === 0 ? (
+      ) : hasCurrentPeriodData && data.leaderboard.length === 0 ? (
         <p className={styles.status}>No sales in this period.</p>
-      ) : (
+      ) : hasCurrentPeriodData ? (
         <ol className={styles.list}>
           {data?.leaderboard?.map((row) => {
             const isCurrentUser = row.employee_id === user.id;
@@ -127,7 +163,11 @@ export default function Leaderboard() {
               >
                 <span className={styles.rank}>#{row.rank}</span>
                 <span className={styles.person}>
-                  <Avatar name={row.name} photoUrl={row.photo_url} />
+                  <Avatar
+                    name={row.name}
+                    photoUrl={row.photo_url}
+                    size={displayMode ? 'large' : 'medium'}
+                  />
                   <span className={styles.name}>{row.name}</span>
                   {isCurrentUser && (
                     <span className={styles.youLabel}>You</span>
@@ -138,7 +178,7 @@ export default function Leaderboard() {
             );
           })}
         </ol>
-      )}
+      ) : null}
     </section>
   );
 }

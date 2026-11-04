@@ -31,6 +31,7 @@ export const authApi = {
 export const leaderboardApi = {
   get: (period = 'month') => api(
     `/api/leaderboard?period=${encodeURIComponent(period)}`,
+    { cache: 'no-store' },
   ),
 };
 

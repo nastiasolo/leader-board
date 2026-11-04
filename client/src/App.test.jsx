@@ -1,4 +1,10 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import {
+  act,
+  cleanup,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import App from './App.jsx';
@@ -83,11 +89,12 @@ describe('sales leaderboard', () => {
     cleanup();
     localStorage.clear();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('Given an authenticated employee, When the leaderboard loads, Then monthly DKK rankings are shown', async () => {
     // Given a profile and monthly rankings from the API.
-    vi.stubGlobal('fetch', vi.fn()
+    const fetchMock = vi.fn()
       .mockResolvedValueOnce({
         ok: true,
         json: async () => ({
@@ -120,7 +127,8 @@ describe('sales leaderboard', () => {
             },
           ],
         }),
-      }));
+      });
+    vi.stubGlobal('fetch', fetchMock);
 
     // When the employee opens the leaderboard page.
     const { container } = render(<App />);
@@ -128,7 +136,7 @@ describe('sales leaderboard', () => {
     // Then the page shows the rankings, DKK totals, and own row highlight.
     expect(await screen.findByRole('heading', { name: 'Leaderboard' }))
       .toBeTruthy();
-    expect(screen.getByText('Jordan Lee')).toBeTruthy();
+    expect(await screen.findByText('Jordan Lee')).toBeTruthy();
     expect(container.querySelector('img[src="/avatars/jordan.png"]'))
       .toBeTruthy();
     expect(screen.getByText('12.345,50 kr.')).toBeTruthy();
@@ -136,6 +144,7 @@ describe('sales leaderboard', () => {
       .getAttribute('aria-current')).toBe('true');
     expect(screen.getByRole('button', { name: 'This month' })
       .getAttribute('aria-pressed')).toBe('true');
+    expect(fetchMock.mock.calls[1][1].cache).toBe('no-store');
   });
 
   it('Given monthly rankings, When the employee selects This week, Then weekly rankings are requested', async () => {
@@ -808,6 +817,7 @@ describe('leaderboard display access', () => {
     cleanup();
     localStorage.clear();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   it('Given display credentials, When signing in, Then the read-only display opens', async () => {
@@ -909,6 +919,68 @@ describe('leaderboard display access', () => {
     expect(await screen.findByRole('button', { name: 'Exit display' }))
       .toBeTruthy();
     expect(screen.queryByRole('link', { name: 'Admin' })).toBeNull();
+  });
+
+  it('Given a display ranking, When its refresh fails, Then the last good data stays visible', async () => {
+    // Given: an admin display session, one result, and a later API error.
+    localStorage.setItem('token', 'admin-token');
+    window.history.pushState({}, '', '/display');
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          id: 1,
+          name: 'Avery Johnson',
+          email: 'admin@demo.com',
+          is_admin: true,
+          is_display: false,
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          period: 'month',
+          start: '2026-11-01',
+          end: '2026-11-04',
+          leaderboard: [{
+            rank: 1,
+            employee_id: 2,
+            name: 'Alex Morgan',
+            photo_url: '/avatars/alex.png',
+            total_sales: 10000,
+          }],
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        statusText: 'Service Unavailable',
+        json: async () => ({ error: 'Leaderboard is temporarily unavailable' }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+    const setIntervalMock = vi.spyOn(window, 'setInterval');
+    const clearIntervalMock = vi.spyOn(window, 'clearInterval');
+
+    // When: the display refresh timer fires after the initial result.
+    const { unmount } = render(<App />);
+    expect(await screen.findByText('10.000,00 kr.')).toBeTruthy();
+    const refreshCall = setIntervalMock.mock.calls.find(
+      ([, delay]) => delay === 30 * 60 * 1000,
+    );
+    expect(refreshCall).toBeTruthy();
+    await act(async () => {
+      refreshCall[0]();
+    });
+
+    // Then: the error appears and the last successful ranking stays visible.
+    expect((await screen.findByRole('alert')).textContent).toBe(
+      'Leaderboard is temporarily unavailable',
+    );
+    expect(screen.getByText('10.000,00 kr.')).toBeTruthy();
+    expect(screen.getByText(/Last updated at/)).toBeTruthy();
+
+    // And: leaving the screen cancels its pending timer.
+    unmount();
+    expect(clearIntervalMock).toHaveBeenCalled();
   });
 
   it('Given an admin, When opening the admin page, Then Show on screen opens a new tab', async () => {
