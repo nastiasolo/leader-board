@@ -4,6 +4,12 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
+  box-shadow: var(--shadow-soft);
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
+}
+
+.form:focus-within {
+  border-color: rgba(88, 166, 255, 0.55);
 }
 
 .fields {
@@ -54,10 +60,12 @@
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
+  transition: filter var(--motion-fast), transform var(--motion-fast);
 }
 
 .submit:hover:not(:disabled) {
   filter: brightness(1.1);
+  transform: translateY(-1px);
 }
 
 .submit:disabled {
@@ -81,6 +89,7 @@
   font: inherit;
   font-size: 0.875rem;
   cursor: pointer;
+  transition: border-color var(--motion-fast), color var(--motion-fast);
 }
 
 .cancel:hover:not(:disabled) {

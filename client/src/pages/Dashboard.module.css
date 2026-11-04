@@ -76,6 +76,19 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0.65rem;
+  box-shadow: 0 0.25rem 0.8rem rgba(0, 0, 0, 0.08);
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    transform var(--motion-fast);
+}
+
+.sale:hover {
+  background: var(--surface-raised);
+  border-color: rgba(88, 166, 255, 0.4);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
 }
 
 .saleDetails {
@@ -129,6 +142,10 @@
   font: inherit;
   font-size: 0.75rem;
   cursor: pointer;
+  transition:
+    color var(--motion-fast),
+    border-color var(--motion-fast),
+    background-color var(--motion-fast);
 }
 
 .editButton:hover {

@@ -97,6 +97,11 @@
   font: inherit;
   font-size: 0.85rem;
   cursor: pointer;
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    color var(--motion-fast),
+    transform var(--motion-fast);
 }
 
 .filter:hover,
@@ -104,6 +109,10 @@
   color: var(--text);
   background: var(--surface);
   border-color: var(--border);
+}
+
+.filter:hover {
+  transform: translateY(-1px);
 }
 
 .list {
@@ -125,11 +134,53 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0.65rem;
+  animation: row-enter var(--motion-enter) ease-out both;
+  transition:
+    background-color var(--motion-fast),
+    border-color var(--motion-fast),
+    box-shadow var(--motion-fast),
+    transform var(--motion-fast);
+}
+
+.row:nth-child(2) {
+  animation-delay: 35ms;
+}
+
+.row:nth-child(3) {
+  animation-delay: 70ms;
+}
+
+.row:nth-child(4) {
+  animation-delay: 105ms;
+}
+
+.row:nth-child(5) {
+  animation-delay: 140ms;
+}
+
+.row:hover {
+  background: var(--surface-raised);
+  border-color: rgba(88, 166, 255, 0.4);
+  box-shadow: var(--shadow-soft);
+  transform: translateY(-1px);
 }
 
 .highlight {
+  background: rgba(88, 166, 255, 0.06);
   border-color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+@keyframes row-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.35rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .rank {
@@ -176,6 +227,14 @@
 
 .error {
   color: var(--danger);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .filter,
+  .row {
+    animation: none;
+    transition: none;
+  }
 }
 
 @media (max-width: 36rem) {

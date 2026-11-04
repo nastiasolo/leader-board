@@ -41,6 +41,12 @@
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 0.75rem;
+  box-shadow: var(--shadow-soft);
+  transition: border-color var(--motion-fast), box-shadow var(--motion-fast);
+}
+
+.form:focus-within {
+  border-color: rgba(88, 166, 255, 0.55);
 }
 
 .fields {
@@ -128,6 +134,14 @@
 .table td {
   padding: 0.75rem 1rem;
   border-bottom: 1px solid var(--border);
+}
+
+.table tbody tr {
+  transition: background-color var(--motion-fast);
+}
+
+.table tbody tr:hover {
+  background: var(--surface-raised);
 }
 
 .table th {

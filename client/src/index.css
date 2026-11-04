@@ -6,6 +6,8 @@
   --muted: #8b949e;
   --accent: #58a6ff;
   --danger: #f85149;
+  --surface-raised: #202b3c;
+  --shadow-soft: 0 0.75rem 1.75rem rgba(0, 0, 0, 0.16);
   --motion-fast: 180ms;
   --motion-enter: 280ms;
 }
