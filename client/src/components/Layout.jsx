@@ -48,7 +48,7 @@ export default function Layout() {
           )}
           {isAdmin && (
             <NavLink
-              className={styles.navLink}
+              className={styles.displayAction}
               to="/display"
               target="_blank"
               rel="noreferrer"

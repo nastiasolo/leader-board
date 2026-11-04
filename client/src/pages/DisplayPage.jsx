@@ -18,7 +18,7 @@ export default function DisplayPage() {
   }
 
   return (
-    <main className={styles.display}>
+    <main className={`pageEnter ${styles.display}`}>
       <div className={styles.toolbar}>
         <span className={styles.label}>Sales display</span>
         <button

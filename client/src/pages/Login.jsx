@@ -29,7 +29,7 @@ export default function Login() {
   }
 
   return (
-    <main className={styles.wrap}>
+    <main className={`pageEnter ${styles.wrap}`}>
       <section className={styles.card} aria-labelledby="login-title">
         <p className={styles.eyebrow}>Sales performance</p>
         <h1 className={styles.title}>Sales Leaderboard</h1>

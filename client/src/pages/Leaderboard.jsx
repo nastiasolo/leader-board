@@ -111,7 +111,7 @@ export default function Leaderboard({ displayMode = false }) {
   return (
     <section className={displayMode
       ? `${styles.leaderboard} ${styles.displayMode}`
-      : styles.leaderboard}
+      : `pageEnter ${styles.leaderboard}`}
     >
       <div className={styles.heading}>
         <div>

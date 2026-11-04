@@ -80,7 +80,7 @@ export default function Dashboard() {
   }
 
   return (
-    <section className={styles.dashboard}>
+    <section className={`pageEnter ${styles.dashboard}`}>
       <div className={styles.heading}>
         <div>
           <p className={styles.eyebrow}>Sales performance</p>

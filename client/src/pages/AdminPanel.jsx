@@ -163,7 +163,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <section className={styles.admin}>
+    <section className={`pageEnter ${styles.admin}`}>
       <div className={styles.heading}>
         <div>
           <p className={styles.eyebrow}>Workspace settings</p>
