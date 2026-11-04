@@ -111,6 +111,12 @@
   font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
+  transition: filter var(--motion-fast), transform var(--motion-fast);
+}
+
+.submit:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }
 
 .submit:disabled {
