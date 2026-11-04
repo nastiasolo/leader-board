@@ -1,5 +1,6 @@
 .dashboard {
   max-width: 56rem;
+  margin-inline: auto;
 }
 
 .heading {
